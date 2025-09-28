@@ -101,6 +101,7 @@ func main() {
 
 		switch event {
 		case "cert_obtained", "cert_renewed", "cached_managed_cert":
+			fmt.Println("Processing event:", event, domain)
 			inOnEventFetch.Store(true)
 			defer inOnEventFetch.Store(false)
 			fmt.Println("Processing event:", event, domain)
