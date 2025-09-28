@@ -8,8 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -20,27 +18,26 @@ import (
 var keystoreMux sync.Mutex
 
 func main() {
-	// ---- Print all environment variables (sorted) ----
-	mask := strings.EqualFold(os.Getenv("ENV_DUMP_RAW"), "true") == false
-	dumpEnv(mask)
 
-	domain := os.Getenv("TLS_DOMAIN")
+	settings := NewSettingType(true)
+
+	domain := settings.Get(TLS_DOMAIN)
 	if domain == "" {
 		log.Fatal("TLS_DOMAIN must be set")
 	}
-	acmeURL := os.Getenv("ACME_URL")
-	caCertPath := os.Getenv("ACME_CA_CERT")
+	acmeURL := settings.Get(ACME_URL)
+	caCertPath := settings.Get(ACME_CA_CERT)
 
-	keystorePath := getenvDefault("KEYSTORE_PATH", "keystore.jks")
-	keystorePass := getenvDefault("KEYSTORE_PASS", "changeit")
-	keystoreAlias := getenvDefault("KEYSTORE_ALIAS", "server")
+	keystorePath := settings.Get(KEYSTORE_PATH)
+	keystorePass := settings.Get(KEYSTORE_PASS)
+	keystoreAlias := settings.Get(KEYSTORE_ALIAS)
 
-	truststorePath := getenvDefault("TRUSTSTORE_PATH", "truststore.jks")
-	truststorePass := getenvDefault("TRUSTSTORE_PASS", "changeit")
-	truststoreAlias := getenvDefault("TRUSTSTORE_ALIAS", "rootca")
+	truststorePath := settings.Get(TRUSTSTORE_PATH)
+	truststorePass := settings.Get(TRUSTSTORE_PASS)
+	truststoreAlias := settings.Get(TRUSTSTORE_ALIAS)
 
 	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.Email = os.Getenv("ACME_EMAIL")
+	certmagic.DefaultACME.Email = settings.Get(ACME_EMAIL)
 	if certmagic.DefaultACME.Email == "" {
 		certmagic.DefaultACME.Email = "admin@" + domain
 	}
@@ -217,66 +214,4 @@ func getenvDefault(name, def string) string {
 		return v
 	}
 	return def
-}
-
-// ----------------- env dump helpers -----------------
-
-func dumpEnv(maskSensitive bool) {
-	env := os.Environ()
-	type kv struct{ k, v string }
-	var list []kv
-	for _, e := range env {
-		parts := strings.SplitN(e, "=", 2)
-		k := parts[0]
-		v := ""
-		if len(parts) > 1 {
-			v = parts[1]
-		}
-		list = append(list, kv{k: k, v: v})
-	}
-	sort.Slice(list, func(i, j int) bool { return list[i].k < list[j].k })
-
-	// width for alignment
-	maxk := 0
-	for _, p := range list {
-		if len(p.k) > maxk {
-			maxk = len(p.k)
-		}
-	}
-
-	log.Printf("---- Environment (%d vars) ----", len(list))
-	for _, p := range list {
-		val := maybeMask(p.k, p.v, maskSensitive)
-		// k padded right to maxk
-		log.Printf("%-*s = %s", maxk, p.k, val)
-	}
-	log.Printf("---- End Environment ----")
-}
-
-func maybeMask(name, value string, mask bool) string {
-	if !mask {
-		return value
-	}
-	// Heuristic: mask likely secrets
-	nameLower := strings.ToLower(name)
-	if strings.Contains(nameLower, "pass") ||
-		strings.Contains(nameLower, "password") ||
-		strings.Contains(nameLower, "secret") ||
-		strings.Contains(nameLower, "token") ||
-		strings.Contains(nameLower, "key") ||
-		strings.Contains(nameLower, "private") {
-		return maskTail(value)
-	}
-	return value
-}
-
-func maskTail(s string) string {
-	if s == "" {
-		return ""
-	}
-	// keep last 4 chars if long enough
-	if len(s) <= 4 {
-		return "****"
-	}
-	return strings.Repeat("*", len(s)-4) + s[len(s)-4:]
 }
