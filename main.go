@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"log"
@@ -84,6 +85,13 @@ func main() {
 
 	cfg.OnEvent = func(ctx context.Context, event string, data map[string]any) error {
 		log.Printf("📜 CertMagic event: %s", event)
+
+		jsonData, err := json.MarshalIndent(data, "", "  ")
+		if err != nil {
+			log.Printf("failed to marshal event data: %v", err)
+		}
+		log.Printf("Event data: %s", jsonData)
+
 		switch event {
 		case "cert_obtained", "cert_renewed":
 			cert, ok := data["certificate"].(certmagic.Certificate)
