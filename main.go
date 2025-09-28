@@ -10,13 +10,17 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/caddyserver/certmagic"
 	"github.com/pavlo-v-chernykh/keystore-go/v4"
 )
 
-var keystoreMux sync.Mutex
+var (
+	keystoreMux    sync.Mutex
+	inOnEventFetch atomic.Bool // re-entrancy guard
+)
 
 func main() {
 
@@ -85,6 +89,9 @@ func main() {
 
 	cfg.OnEvent = func(ctx context.Context, event string, data map[string]any) error {
 		log.Printf("📜 CertMagic event: %s", event)
+		if inOnEventFetch.Load() {
+			return nil
+		}
 
 		jsonData, err := json.MarshalIndent(data, "", "  ")
 		if err != nil {
@@ -94,6 +101,8 @@ func main() {
 
 		switch event {
 		case "cert_obtained", "cert_renewed", "cached_managed_cert":
+			inOnEventFetch.Store(true)
+			defer inOnEventFetch.Store(false)
 			// Load cert from CertMagic rather than expecting it in event data
 			var got certmagic.Certificate
 			var loadErr error
