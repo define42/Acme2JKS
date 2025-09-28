@@ -99,8 +99,7 @@ func main() {
 		}
 		log.Printf("Event data: %s", jsonData)
 
-		switch event {
-		case "cert_obtained", "cert_renewed", "cached_managed_cert":
+		if event == "cert_obtained" || event == "cert_renewed" || event == "cached_managed_cert" {
 			fmt.Println("Processing event:", event, domain)
 			inOnEventFetch.Store(true)
 			defer inOnEventFetch.Store(false)
@@ -111,7 +110,7 @@ func main() {
 			//			for _, d := range getEventDomains() {
 			got, loadErr = cfg.CacheManagedCertificate(ctx, domain)
 			if loadErr == nil && !got.Empty() {
-				break
+				return nil
 			}
 			//			}
 			if loadErr != nil || got.Empty() {
