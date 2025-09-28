@@ -83,6 +83,7 @@ func main() {
 	cfg := certmagic.NewDefault()
 
 	cfg.OnEvent = func(ctx context.Context, event string, data map[string]any) error {
+		log.Printf("📜 CertMagic event: %s", event)
 		switch event {
 		case "cert_obtained", "cert_renewed":
 			cert, ok := data["certificate"].(certmagic.Certificate)
