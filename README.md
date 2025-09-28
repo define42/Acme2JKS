@@ -1,6 +1,6 @@
-# Go ACME Keystore/Truststore Exporter
+# ACME2JKS Keystore/Truststore Exporter
 
-This project is a small **Go webserver** that uses [CertMagic](https://github.com/caddyserver/certmagic) to automatically obtain and renew TLS certificates via ACME (Let’s Encrypt or a custom ACME CA).
+ACME2JKS is a small **Go webserver** that uses [CertMagic](https://github.com/caddyserver/certmagic) to automatically obtain and renew TLS certificates via ACME (Let’s Encrypt or a custom ACME CA).
 It then exports the obtained certificates into **Java-compatible keystores and truststores** (`.jks`), making it easy to integrate with Java applications such as **Tomcat**, **Jetty**, **Spring Boot**, etc.
 
 ---
