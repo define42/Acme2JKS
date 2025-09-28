@@ -103,6 +103,7 @@ func main() {
 		case "cert_obtained", "cert_renewed", "cached_managed_cert":
 			inOnEventFetch.Store(true)
 			defer inOnEventFetch.Store(false)
+			fmt.Println("Processing event:", event, domain)
 			// Load cert from CertMagic rather than expecting it in event data
 			var got certmagic.Certificate
 			var loadErr error
@@ -151,6 +152,8 @@ func main() {
 }
 
 func saveToKeystore(cert certmagic.Certificate, path, password, alias string) error {
+
+	fmt.Println("Saving certificate to keystore:", path)
 	// Build cert chain
 	var chain []keystore.Certificate
 	for _, der := range cert.Certificate.Certificate {
@@ -174,6 +177,8 @@ func saveToKeystore(cert certmagic.Certificate, path, password, alias string) er
 		PrivateKey:       derBytes, // already crypto.PrivateKey
 		CertificateChain: chain,
 	}
+
+	fmt.Println("Certificate has", len(chain), "certificates in the chain")
 
 	ks := keystore.New()
 	if err := ks.SetPrivateKeyEntry(alias, entry, []byte(password)); err != nil {
@@ -221,6 +226,7 @@ func saveToTruststore(rootPEM []byte, path, pass, aliasPrefix string) error {
 }
 
 func atomicWriteJKS(ks keystore.KeyStore, path, pass string) error {
+	fmt.Println("Writing keystore to:", path)
 	tmp := path + ".tmp"
 	f, err := os.Create(tmp)
 	if err != nil {
