@@ -193,7 +193,11 @@ func atomicWriteJKS(ks keystore.KeyStore, path, pass string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Printf("failed to close temp file: %v", err)
+		}
+	}()
 	if err := ks.Store(f, []byte(pass)); err != nil {
 		return err
 	}
