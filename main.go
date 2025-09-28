@@ -101,19 +101,15 @@ func main() {
 		log.Printf("Event data: %s", jsonData)
 
 		if event == "cert_obtained" || event == "cert_renewed" || event == "cached_managed_cert" {
-			fmt.Println("Processing event:", event, domain)
+			fmt.Println("Processing event1:", event, domain)
 			inOnEventFetch.Store(true)
 			defer inOnEventFetch.Store(false)
-			fmt.Println("Processing event:", event, domain)
+			fmt.Println("Processing event2:", event, domain)
 			// Load cert from CertMagic rather than expecting it in event data
 			var got certmagic.Certificate
 			var loadErr error
 			//			for _, d := range getEventDomains() {
 			got, loadErr = cfg.CacheManagedCertificate(ctx, domain)
-			if loadErr == nil && !got.Empty() {
-				return nil
-			}
-			//			}
 			if loadErr != nil || got.Empty() {
 				log.Printf("could not load managed certificate after %s: %v", event, loadErr)
 				return nil // don't interfere with CertMagic's flow
