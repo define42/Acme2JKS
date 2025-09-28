@@ -130,6 +130,8 @@ func main() {
 			log.Printf("✅ Keystore updated at %s", keystorePath)
 		}
 
+		fmt.Println("Event processing complete:", event, domain)
+
 		return nil
 	}
 
