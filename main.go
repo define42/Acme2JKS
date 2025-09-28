@@ -85,6 +85,7 @@ func main() {
 		log.Printf("Truststore written to %s", truststorePath)
 	}
 
+	certmagic.Default.Storage = &certmagic.FileStorage{Path: settings.Get(CERTMAGIC_STORAGE_PATH)}
 	cfg := certmagic.NewDefault()
 
 	cfg.OnEvent = func(ctx context.Context, event string, data map[string]any) error {

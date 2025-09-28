@@ -28,6 +28,7 @@ func NewSettingType(print bool) *SettingsType {
 	s.Set(TRUSTSTORE_PASS, "Password for Java TrustStore", "password")
 	s.Set(TRUSTSTORE_ALIAS, "Alias for CA certificate entry in Java TrustStore", "rootca")
 	s.Set(ACME_EMAIL, "Email address for ACME registration and recovery contact", "")
+	s.Set(CERTMAGIC_STORAGE_PATH, "Path to CertMagic storage (must be writable by the application)", "./")
 
 	if print {
 		table := tablewriter.NewWriter(os.Stdout)
@@ -58,14 +59,15 @@ func (s *SettingsType) Set(id string, description string, defaultValue string) {
 }
 
 const (
-	TLS_DOMAIN       = "TLS_DOMAIN"
-	ACME_URL         = "ACME_URL"
-	ACME_CA_CERT     = "ACME_CA_CERT"
-	KEYSTORE_PATH    = "KEYSTORE_PATH"
-	KEYSTORE_PASS    = "KEYSTORE_PASS"
-	KEYSTORE_ALIAS   = "KEYSTORE_ALIAS"
-	TRUSTSTORE_PATH  = "TRUSTSTORE_PATH"
-	TRUSTSTORE_PASS  = "TRUSTSTORE_PASS"
-	TRUSTSTORE_ALIAS = "TRUSTSTORE_ALIAS"
-	ACME_EMAIL       = "ACME_EMAIL"
+	TLS_DOMAIN             = "TLS_DOMAIN"
+	ACME_URL               = "ACME_URL"
+	ACME_CA_CERT           = "ACME_CA_CERT"
+	KEYSTORE_PATH          = "KEYSTORE_PATH"
+	KEYSTORE_PASS          = "KEYSTORE_PASS"
+	KEYSTORE_ALIAS         = "KEYSTORE_ALIAS"
+	TRUSTSTORE_PATH        = "TRUSTSTORE_PATH"
+	TRUSTSTORE_PASS        = "TRUSTSTORE_PASS"
+	TRUSTSTORE_ALIAS       = "TRUSTSTORE_ALIAS"
+	ACME_EMAIL             = "ACME_EMAIL"
+	CERTMAGIC_STORAGE_PATH = "CERTMAGIC_STORAGE_PATH"
 )
