@@ -93,22 +93,32 @@ func main() {
 		log.Printf("Event data: %s", jsonData)
 
 		switch event {
-		case "cert_obtained", "cert_renewed":
-			cert, ok := data["certificate"].(certmagic.Certificate)
-			if !ok {
-				return fmt.Errorf("event %s: certificate missing or wrong type", event)
+		case "cert_obtained", "cert_renewed", "cached_managed_cert":
+			// Load cert from CertMagic rather than expecting it in event data
+			var got certmagic.Certificate
+			var loadErr error
+			//			for _, d := range getEventDomains() {
+			got, loadErr = cfg.CacheManagedCertificate(ctx, domain)
+			if loadErr == nil && !got.Empty() {
+				break
+			}
+			//			}
+			if loadErr != nil || got.Empty() {
+				log.Printf("could not load managed certificate after %s: %v", event, loadErr)
+				return nil // don't interfere with CertMagic's flow
 			}
 
-			log.Printf("📜 CertMagic event: %s → updating keystore", event)
-
+			// Update JKS
 			keystoreMux.Lock()
 			defer keystoreMux.Unlock()
 
-			if err := saveToKeystore(cert, keystorePath, keystorePass, keystoreAlias); err != nil {
-				return fmt.Errorf("failed to save keystore: %w", err)
+			if err := saveToKeystore(got, keystorePath, keystorePass, keystoreAlias); err != nil {
+				log.Printf("failed to save keystore after %s: %v", event, err)
+				return nil
 			}
 			log.Printf("✅ Keystore updated at %s", keystorePath)
 		}
+
 		return nil
 	}
 
@@ -216,11 +226,4 @@ func atomicWriteJKS(ks keystore.KeyStore, path, pass string) error {
 		return err
 	}
 	return os.Rename(tmp, path)
-}
-
-func getenvDefault(name, def string) string {
-	if v := os.Getenv(name); v != "" {
-		return v
-	}
-	return def
 }
