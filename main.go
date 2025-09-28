@@ -90,6 +90,7 @@ func main() {
 	cfg.OnEvent = func(ctx context.Context, event string, data map[string]any) error {
 		log.Printf("📜 CertMagic event: %s", event)
 		if inOnEventFetch.Load() {
+			fmt.Println("Re-entrant call to OnEvent, ignoring")
 			return nil
 		}
 
