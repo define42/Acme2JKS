@@ -51,8 +51,32 @@ go build -o acme-jks-exporter
 Or run directly:
 
 ```bash
-go run main.go
+go run .
 ```
+
+### Container releases
+
+Every push to `main` builds the Dockerfile and publishes a `linux/amd64` image to
+`ghcr.io/define42/acme2jks` using the
+[container release workflow](.github/workflows/container-release.yml).
+
+Versions use `YYYY.MM.DD.RUN_NUMBER.RUN_ATTEMPT`, with the date in UTC. For example,
+`2026.10.12.42.1` is the first attempt of workflow run 42 on October 12, 2026.
+The run number distinguishes multiple pushes on the same day, and the attempt
+number gives reruns their own version. Each push runs independently so a newer
+push does not cancel an earlier release.
+
+Find the published version, image digest, and pull command in the workflow run's
+summary or the repository's **Packages** section. Pull a specific release with:
+
+```bash
+docker pull ghcr.io/define42/acme2jks:2026.10.12.42.1
+```
+
+Replace the example version with a published tag. Publishing uses the built-in
+`GITHUB_TOKEN` with `packages: write`; no additional registry credentials are
+required. The image name is derived from the repository name and converted to
+lowercase, so forks publish under their own owner and repository.
 
 ---
 
@@ -93,7 +117,7 @@ export TRUSTSTORE_PATH="/etc/ssl/keystores/mytruststore.jks"
 export TRUSTSTORE_PASS="trustsecret"
 export TRUSTSTORE_ALIAS="myca"
 
-go run main.go
+go run .
 ```
 
 Results:
